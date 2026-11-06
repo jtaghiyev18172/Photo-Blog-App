@@ -1,12 +1,14 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.UserRegisterRequestDto;
-import com.example.backend.dto.UserResponseDto;
+
+import com.example.backend.dto.*;
+
 import com.example.backend.service.AuthService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
 
 @RestController
 @RequestMapping("/api/auth")
@@ -21,5 +23,10 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<UserResponseDto> register(@Valid @RequestBody UserRegisterRequestDto req) {
         return ResponseEntity.status(HttpStatus.CREATED).body(auth.register(req));
+    }
+
+    @PostMapping("/login")
+    public AuthResponseDto login(@Valid @RequestBody LoginRequestDto req) {
+        return auth.login(req);
     }
 }

@@ -1,5 +1,9 @@
 package com.example.backend.service;
 
+import com.example.backend.dto.AuthResponseDto;
+import com.example.backend.dto.LoginRequestDto;
+import com.example.backend.security.JwtUtil;
+
 import com.example.backend.dto.UserRegisterRequestDto;
 import com.example.backend.dto.UserResponseDto;
 import com.example.backend.entity.User;
@@ -14,10 +18,12 @@ public class AuthService {
 
     private final UserRepository users;
     private final PasswordEncoder encoder;
+    private final JwtUtil jwt;
 
-    public AuthService(UserRepository users, PasswordEncoder encoder) {
+    public AuthService(UserRepository users, PasswordEncoder encoder, JwtUtil jwt) {
         this.users = users;
         this.encoder = encoder;
+        this.jwt = jwt;
     }
 
     public UserResponseDto register(UserRegisterRequestDto req) {
@@ -32,6 +38,13 @@ public class AuthService {
         u.setPassword(encoder.encode(req.getPassword()));
         users.save(u);
         return toResponse(u);
+    }
+
+    public AuthResponseDto login(LoginRequestDto req) {
+        User u = users.findByEmail(req.getEmail())
+            .filter(x -> encoder.matches(req.getPassword(), x.getPassword()))
+            .orElseThrow(() -> new ApiException(HttpStatus.UNAUTHORIZED, "Invalid email or password"));
+        return new AuthResponseDto(jwt.generateToken(u.getEmail()), "Bearer");
     }
 
     public static UserResponseDto toResponse(User u) {
